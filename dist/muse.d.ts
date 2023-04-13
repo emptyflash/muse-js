@@ -1,28 +1,9 @@
 /// <reference types="web-bluetooth" />
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import {
-    AccelerometerData,
-    EEGReading,
-    EventMarker,
-    GyroscopeData,
-    MuseControlResponse,
-    MuseDeviceInfo,
-    PPGReading,
-    TelemetryData,
-    XYZ,
-} from './lib/muse-interfaces';
+import { AccelerometerData, EEGReading, EventMarker, GyroscopeData, MuseControlResponse, MuseDeviceInfo, PPGReading, TelemetryData, XYZ } from './lib/muse-interfaces';
 export { zipSamples, EEGSample } from './lib/zip-samples';
 export { zipSamplesPpg, PPGSample } from './lib/zip-samplesPpg';
-export {
-    EEGReading,
-    PPGReading,
-    TelemetryData,
-    AccelerometerData,
-    GyroscopeData,
-    XYZ,
-    MuseControlResponse,
-    MuseDeviceInfo,
-};
+export { EEGReading, PPGReading, TelemetryData, AccelerometerData, GyroscopeData, XYZ, MuseControlResponse, MuseDeviceInfo, };
 export declare const MUSE_SERVICE = 65165;
 export declare const PPG_FREQUENCY = 64;
 export declare const PPG_SAMPLES_PER_READING = 6;
@@ -49,7 +30,6 @@ export declare class MuseClient {
     private ppgCharacteristics;
     private lastIndex;
     private lastTimestamp;
-    private getTimestamp;
     connect(gatt?: BluetoothRemoteGATTServer): Promise<void>;
     sendCommand(cmd: string): Promise<void>;
     start(): Promise<void>;
@@ -58,4 +38,5 @@ export declare class MuseClient {
     deviceInfo(): Promise<MuseDeviceInfo>;
     injectMarker(value: string | number, timestamp?: number): Promise<void>;
     disconnect(): void;
+    private getTimestamp;
 }

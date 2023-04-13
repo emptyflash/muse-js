@@ -1,25 +1,15 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-var operators_1 = require('rxjs/operators');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var operators_1 = require("rxjs/operators");
 function parseControl(controlData) {
-    return controlData.pipe(
-        operators_1.concatMap(function(data) {
-            return data.split('');
-        }),
-        operators_1.scan(function(acc, value) {
-            if (acc.indexOf('}') >= 0) {
-                return value;
-            } else {
-                return acc + value;
-            }
-        }, ''),
-        operators_1.filter(function(value) {
-            return value.indexOf('}') >= 0;
-        }),
-        operators_1.map(function(value) {
-            return JSON.parse(value);
-        }),
-    );
+    return controlData.pipe(operators_1.concatMap(function (data) { return data.split(''); }), operators_1.scan(function (acc, value) {
+        if (acc.indexOf('}') >= 0) {
+            return value;
+        }
+        else {
+            return acc + value;
+        }
+    }, ''), operators_1.filter(function (value) { return value.indexOf('}') >= 0; }), operators_1.map(function (value) { return JSON.parse(value); }));
 }
 exports.parseControl = parseControl;
 function decodeUnsigned12BitData(samples) {
@@ -28,7 +18,8 @@ function decodeUnsigned12BitData(samples) {
     for (var i = 0; i < samples.length; i++) {
         if (i % 3 === 0) {
             samples12Bit.push((samples[i] << 4) | (samples[i + 1] >> 4));
-        } else {
+        }
+        else {
             samples12Bit.push(((samples[i] & 0xf) << 8) | samples[i + 1]);
             i++;
         }
@@ -48,9 +39,7 @@ function decodeUnsigned24BitData(samples) {
 }
 exports.decodeUnsigned24BitData = decodeUnsigned24BitData;
 function decodeEEGSamples(samples) {
-    return decodeUnsigned12BitData(samples).map(function(n) {
-        return 0.48828125 * (n - 0x800);
-    });
+    return decodeUnsigned12BitData(samples).map(function (n) { return 0.48828125 * (n - 0x800); });
 }
 exports.decodeEEGSamples = decodeEEGSamples;
 function decodePPGSamples(samples) {
