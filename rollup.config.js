@@ -1,10 +1,10 @@
-import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve'
 
 export default {
   input: 'dist/muse.js',
   output: {
     dir: 'bundle/',
-    format: 'cjs'
+    format: 'umd'
   },
-  plugins: [commonjs()]
+  plugins: [resolve()]
 };

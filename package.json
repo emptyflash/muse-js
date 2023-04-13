@@ -4,11 +4,13 @@
   "description": "Muse 2016 EEG Headset JavaScript Library",
   "main": "dist/muse.js",
   "typings": "dist/muse.d.ts",
+  "type": "module",
   "repository": "https://github.com/urish/muse-js",
   "author": "Uri Shaked <uri@codemagic.co.il>",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
+    "bundle": "rollup -c rollup.config.js",
     "format": "prettier --write src/**.ts **/*.json",
     "precommit": "lint-staged",
     "prepublish": "npm run build",
@@ -21,6 +23,8 @@
     "dist"
   ],
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
     "@types/jest": "^22.2.3",
     "event-target-shim": "^3.0.0",
     "fuse-box": "^2.0.0",
@@ -28,6 +32,7 @@
     "jest": "^22.4.3",
     "lint-staged": "^7.0.4",
     "prettier": "^1.12.1",
+    "rollup": "^3.20.2",
     "text-encoding": "^0.6.4",
     "ts-jest": "^22.4.4",
     "tslint": "^5.8.0",
