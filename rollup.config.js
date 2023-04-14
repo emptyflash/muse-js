@@ -3,7 +3,7 @@ import resolve from '@rollup/plugin-node-resolve'
 export default {
   input: 'dist/muse.js',
   output: {
-    dir: 'bundle/muse.js',
+    dir: 'bundle/',
     format: 'umd'
   },
   plugins: [resolve()]
