@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -34,20 +33,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var rxjs_1 = require("rxjs");
-var operators_1 = require("rxjs/operators");
-function decodeResponse(bytes) {
+import { fromEvent } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
+export function decodeResponse(bytes) {
     return new TextDecoder().decode(bytes.subarray(1, 1 + bytes[0]));
 }
-exports.decodeResponse = decodeResponse;
-function encodeCommand(cmd) {
+export function encodeCommand(cmd) {
     var encoded = new TextEncoder().encode("X" + cmd + "\n");
     encoded[0] = encoded.length - 1;
     return encoded;
 }
-exports.encodeCommand = encodeCommand;
-function observableCharacteristic(characteristic) {
+export function observableCharacteristic(characteristic) {
     return __awaiter(this, void 0, void 0, function () {
         var disconnected;
         return __generator(this, function (_a) {
@@ -55,11 +51,10 @@ function observableCharacteristic(characteristic) {
                 case 0: return [4 /*yield*/, characteristic.startNotifications()];
                 case 1:
                     _a.sent();
-                    disconnected = rxjs_1.fromEvent(characteristic.service.device, 'gattserverdisconnected');
-                    return [2 /*return*/, rxjs_1.fromEvent(characteristic, 'characteristicvaluechanged').pipe(operators_1.takeUntil(disconnected), operators_1.map(function (event) { return event.target.value; }))];
+                    disconnected = fromEvent(characteristic.service.device, 'gattserverdisconnected');
+                    return [2 /*return*/, fromEvent(characteristic, 'characteristicvaluechanged').pipe(takeUntil(disconnected), map(function (event) { return event.target.value; }))];
             }
         });
     });
 }
-exports.observableCharacteristic = observableCharacteristic;
 //# sourceMappingURL=muse-utils.js.map

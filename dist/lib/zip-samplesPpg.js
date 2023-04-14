@@ -1,23 +1,21 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var rxjs_1 = require("rxjs");
-var operators_1 = require("rxjs/operators");
-var muse_1 = require("./../muse");
-function zipSamplesPpg(ppgReadings) {
+import { from } from 'rxjs';
+import { concat, mergeMap } from 'rxjs/operators';
+import { PPG_FREQUENCY } from './../muse';
+export function zipSamplesPpg(ppgReadings) {
     var buffer = [];
     var lastTimestamp = null;
-    return ppgReadings.pipe(operators_1.mergeMap(function (reading) {
+    return ppgReadings.pipe(mergeMap(function (reading) {
         if (reading.timestamp !== lastTimestamp) {
             lastTimestamp = reading.timestamp;
             if (buffer.length) {
-                var result = rxjs_1.from([buffer.slice()]);
+                var result = from([buffer.slice()]);
                 buffer.splice(0, buffer.length, reading);
                 return result;
             }
         }
         buffer.push(reading);
-        return rxjs_1.from([]);
-    }), operators_1.concat(rxjs_1.from([buffer])), operators_1.mergeMap(function (readings) {
+        return from([]);
+    }), concat(from([buffer])), mergeMap(function (readings) {
         var result = readings[0].samples.map(function (x, index) {
             var data = [NaN, NaN, NaN];
             for (var _i = 0, readings_1 = readings; _i < readings_1.length; _i++) {
@@ -27,11 +25,10 @@ function zipSamplesPpg(ppgReadings) {
             return {
                 data: data,
                 index: readings[0].index,
-                timestamp: readings[0].timestamp + (index * 1000) / muse_1.PPG_FREQUENCY,
+                timestamp: readings[0].timestamp + (index * 1000) / PPG_FREQUENCY,
             };
         });
-        return rxjs_1.from(result);
+        return from(result);
     }));
 }
-exports.zipSamplesPpg = zipSamplesPpg;
 //# sourceMappingURL=zip-samplesPpg.js.map

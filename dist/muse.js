@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -34,16 +33,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var rxjs_1 = require("rxjs");
-var operators_1 = require("rxjs/operators");
-var muse_parse_1 = require("./lib/muse-parse");
-var muse_utils_1 = require("./lib/muse-utils");
-var zip_samples_1 = require("./lib/zip-samples");
-exports.zipSamples = zip_samples_1.zipSamples;
-var zip_samplesPpg_1 = require("./lib/zip-samplesPpg");
-exports.zipSamplesPpg = zip_samplesPpg_1.zipSamplesPpg;
-exports.MUSE_SERVICE = 0xfe8d;
+import { BehaviorSubject, fromEvent, merge, Subject } from 'rxjs';
+import { filter, first, map, share, take } from 'rxjs/operators';
+import { decodeEEGSamples, decodePPGSamples, parseAccelerometer, parseControl, parseGyroscope, parseTelemetry, } from './lib/muse-parse';
+import { decodeResponse, encodeCommand, observableCharacteristic } from './lib/muse-utils';
+export { zipSamples } from './lib/zip-samples';
+export { zipSamplesPpg } from './lib/zip-samplesPpg';
+export var MUSE_SERVICE = 0xfe8d;
 var CONTROL_CHARACTERISTIC = '273e0001-4c4d-454d-96be-f03bac821358';
 var TELEMETRY_CHARACTERISTIC = '273e000b-4c4d-454d-96be-f03bac821358';
 var GYROSCOPE_CHARACTERISTIC = '273e0009-4c4d-454d-96be-f03bac821358';
@@ -53,8 +49,8 @@ var PPG_CHARACTERISTICS = [
     '273e0010-4c4d-454d-96be-f03bac821358',
     '273e0011-4c4d-454d-96be-f03bac821358',
 ];
-exports.PPG_FREQUENCY = 64;
-exports.PPG_SAMPLES_PER_READING = 6;
+export var PPG_FREQUENCY = 64;
+export var PPG_SAMPLES_PER_READING = 6;
 var EEG_CHARACTERISTICS = [
     '273e0003-4c4d-454d-96be-f03bac821358',
     '273e0004-4c4d-454d-96be-f03bac821358',
@@ -62,18 +58,18 @@ var EEG_CHARACTERISTICS = [
     '273e0006-4c4d-454d-96be-f03bac821358',
     '273e0007-4c4d-454d-96be-f03bac821358',
 ];
-exports.EEG_FREQUENCY = 256;
-exports.EEG_SAMPLES_PER_READING = 12;
+export var EEG_FREQUENCY = 256;
+export var EEG_SAMPLES_PER_READING = 12;
 // These names match the characteristics defined in PPG_CHARACTERISTICS above
-exports.ppgChannelNames = ['ambient', 'infrared', 'red'];
+export var ppgChannelNames = ['ambient', 'infrared', 'red'];
 // These names match the characteristics defined in EEG_CHARACTERISTICS above
-exports.channelNames = ['TP9', 'AF7', 'AF8', 'TP10', 'AUX'];
+export var channelNames = ['TP9', 'AF7', 'AF8', 'TP10', 'AUX'];
 var MuseClient = /** @class */ (function () {
     function MuseClient() {
         this.enableAux = false;
         this.enablePpg = false;
         this.deviceName = '';
-        this.connectionStatus = new rxjs_1.BehaviorSubject(false);
+        this.connectionStatus = new BehaviorSubject(false);
         this.gatt = null;
         this.lastIndex = null;
         this.lastTimestamp = null;
@@ -89,7 +85,7 @@ var MuseClient = /** @class */ (function () {
                         this.gatt = gatt;
                         return [3 /*break*/, 4];
                     case 1: return [4 /*yield*/, navigator.bluetooth.requestDevice({
-                            filters: [{ services: [exports.MUSE_SERVICE] }],
+                            filters: [{ services: [MUSE_SERVICE] }],
                         })];
                     case 2:
                         device = _g.sent();
@@ -100,11 +96,11 @@ var MuseClient = /** @class */ (function () {
                         _g.label = 4;
                     case 4:
                         this.deviceName = this.gatt.device.name || null;
-                        return [4 /*yield*/, this.gatt.getPrimaryService(exports.MUSE_SERVICE)];
+                        return [4 /*yield*/, this.gatt.getPrimaryService(MUSE_SERVICE)];
                     case 5:
                         service = _g.sent();
-                        rxjs_1.fromEvent(this.gatt.device, 'gattserverdisconnected')
-                            .pipe(operators_1.first())
+                        fromEvent(this.gatt.device, 'gattserverdisconnected')
+                            .pipe(first())
                             .subscribe(function () {
                             _this.gatt = null;
                             _this.connectionStatus.next(false);
@@ -116,32 +112,32 @@ var MuseClient = /** @class */ (function () {
                         // Control
                         _b.controlChar = _g.sent();
                         _c = this;
-                        return [4 /*yield*/, muse_utils_1.observableCharacteristic(this.controlChar)];
+                        return [4 /*yield*/, observableCharacteristic(this.controlChar)];
                     case 7:
-                        _c.rawControlData = (_g.sent()).pipe(operators_1.map(function (data) { return muse_utils_1.decodeResponse(new Uint8Array(data.buffer)); }), operators_1.share());
-                        this.controlResponses = muse_parse_1.parseControl(this.rawControlData);
+                        _c.rawControlData = (_g.sent()).pipe(map(function (data) { return decodeResponse(new Uint8Array(data.buffer)); }), share());
+                        this.controlResponses = parseControl(this.rawControlData);
                         return [4 /*yield*/, service.getCharacteristic(TELEMETRY_CHARACTERISTIC)];
                     case 8:
                         telemetryCharacteristic = _g.sent();
                         _d = this;
-                        return [4 /*yield*/, muse_utils_1.observableCharacteristic(telemetryCharacteristic)];
+                        return [4 /*yield*/, observableCharacteristic(telemetryCharacteristic)];
                     case 9:
-                        _d.telemetryData = (_g.sent()).pipe(operators_1.map(muse_parse_1.parseTelemetry));
+                        _d.telemetryData = (_g.sent()).pipe(map(parseTelemetry));
                         return [4 /*yield*/, service.getCharacteristic(GYROSCOPE_CHARACTERISTIC)];
                     case 10:
                         gyroscopeCharacteristic = _g.sent();
                         _e = this;
-                        return [4 /*yield*/, muse_utils_1.observableCharacteristic(gyroscopeCharacteristic)];
+                        return [4 /*yield*/, observableCharacteristic(gyroscopeCharacteristic)];
                     case 11:
-                        _e.gyroscopeData = (_g.sent()).pipe(operators_1.map(muse_parse_1.parseGyroscope));
+                        _e.gyroscopeData = (_g.sent()).pipe(map(parseGyroscope));
                         return [4 /*yield*/, service.getCharacteristic(ACCELEROMETER_CHARACTERISTIC)];
                     case 12:
                         accelerometerCharacteristic = _g.sent();
                         _f = this;
-                        return [4 /*yield*/, muse_utils_1.observableCharacteristic(accelerometerCharacteristic)];
+                        return [4 /*yield*/, observableCharacteristic(accelerometerCharacteristic)];
                     case 13:
-                        _f.accelerometerData = (_g.sent()).pipe(operators_1.map(muse_parse_1.parseAccelerometer));
-                        this.eventMarkers = new rxjs_1.Subject();
+                        _f.accelerometerData = (_g.sent()).pipe(map(parseAccelerometer));
+                        this.eventMarkers = new Subject();
                         if (!this.enablePpg) return [3 /*break*/, 18];
                         this.ppgCharacteristics = [];
                         ppgObservables = [];
@@ -156,15 +152,15 @@ var MuseClient = /** @class */ (function () {
                                     case 1:
                                         ppgChar = _c.sent();
                                         _b = (_a = ppgObservables).push;
-                                        return [4 /*yield*/, muse_utils_1.observableCharacteristic(ppgChar)];
+                                        return [4 /*yield*/, observableCharacteristic(ppgChar)];
                                     case 2:
-                                        _b.apply(_a, [(_c.sent()).pipe(operators_1.map(function (data) {
+                                        _b.apply(_a, [(_c.sent()).pipe(map(function (data) {
                                                 var eventIndex = data.getUint16(0);
                                                 return {
                                                     index: eventIndex,
                                                     ppgChannel: ppgChannelIndex,
-                                                    samples: muse_parse_1.decodePPGSamples(new Uint8Array(data.buffer).subarray(2)),
-                                                    timestamp: _this.getTimestamp(eventIndex, exports.PPG_SAMPLES_PER_READING, exports.PPG_FREQUENCY),
+                                                    samples: decodePPGSamples(new Uint8Array(data.buffer).subarray(2)),
+                                                    timestamp: _this.getTimestamp(eventIndex, PPG_SAMPLES_PER_READING, PPG_FREQUENCY),
                                                 };
                                             }))]);
                                         this_1.ppgCharacteristics.push(ppgChar);
@@ -185,7 +181,7 @@ var MuseClient = /** @class */ (function () {
                         ppgChannelIndex++;
                         return [3 /*break*/, 14];
                     case 17:
-                        this.ppgReadings = rxjs_1.merge.apply(void 0, ppgObservables);
+                        this.ppgReadings = merge.apply(void 0, ppgObservables);
                         _g.label = 18;
                     case 18:
                         // EEG
@@ -202,15 +198,15 @@ var MuseClient = /** @class */ (function () {
                                     case 1:
                                         eegChar = _c.sent();
                                         _b = (_a = eegObservables).push;
-                                        return [4 /*yield*/, muse_utils_1.observableCharacteristic(eegChar)];
+                                        return [4 /*yield*/, observableCharacteristic(eegChar)];
                                     case 2:
-                                        _b.apply(_a, [(_c.sent()).pipe(operators_1.map(function (data) {
+                                        _b.apply(_a, [(_c.sent()).pipe(map(function (data) {
                                                 var eventIndex = data.getUint16(0);
                                                 return {
                                                     electrode: channelIndex,
                                                     index: eventIndex,
-                                                    samples: muse_parse_1.decodeEEGSamples(new Uint8Array(data.buffer).subarray(2)),
-                                                    timestamp: _this.getTimestamp(eventIndex, exports.EEG_SAMPLES_PER_READING, exports.EEG_FREQUENCY),
+                                                    samples: decodeEEGSamples(new Uint8Array(data.buffer).subarray(2)),
+                                                    timestamp: _this.getTimestamp(eventIndex, EEG_SAMPLES_PER_READING, EEG_FREQUENCY),
                                                 };
                                             }))]);
                                         this_2.eegCharacteristics.push(eegChar);
@@ -231,7 +227,7 @@ var MuseClient = /** @class */ (function () {
                         channelIndex++;
                         return [3 /*break*/, 19];
                     case 22:
-                        this.eegReadings = rxjs_1.merge.apply(void 0, eegObservables);
+                        this.eegReadings = merge.apply(void 0, eegObservables);
                         this.connectionStatus.next(true);
                         return [2 /*return*/];
                 }
@@ -242,7 +238,7 @@ var MuseClient = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.controlChar.writeValue(muse_utils_1.encodeCommand(cmd))];
+                    case 0: return [4 /*yield*/, this.controlChar.writeValue(encodeCommand(cmd))];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];
@@ -265,10 +261,10 @@ var MuseClient = /** @class */ (function () {
                         else if (this.enableAux) {
                             preset = 'p20';
                         }
-                        return [4 /*yield*/, this.controlChar.writeValue(muse_utils_1.encodeCommand(preset))];
+                        return [4 /*yield*/, this.controlChar.writeValue(encodeCommand(preset))];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, this.controlChar.writeValue(muse_utils_1.encodeCommand('s'))];
+                        return [4 /*yield*/, this.controlChar.writeValue(encodeCommand('s'))];
                     case 3:
                         _a.sent();
                         return [4 /*yield*/, this.resume()];
@@ -310,7 +306,7 @@ var MuseClient = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         resultListener = this.controlResponses
-                            .pipe(operators_1.filter(function (r) { return !!r.fw; }), operators_1.take(1))
+                            .pipe(filter(function (r) { return !!r.fw; }), take(1))
                             .toPromise();
                         return [4 /*yield*/, this.sendCommand('v1')];
                     case 1:
@@ -365,5 +361,5 @@ var MuseClient = /** @class */ (function () {
     };
     return MuseClient;
 }());
-exports.MuseClient = MuseClient;
+export { MuseClient };
 //# sourceMappingURL=muse.js.map

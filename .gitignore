@@ -1,2 +1,4 @@
 .fusebox
 node_modules
+dist/
+bundle/

@@ -4,7 +4,7 @@ export default {
   input: 'dist/muse.js',
   output: {
     dir: 'bundle/',
-    format: 'umd'
+    format: 'esm'
   },
   plugins: [resolve()]
 };
